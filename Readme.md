@@ -4,7 +4,7 @@
 This software is a work that is included within the GLEIF data quality control initiative, carried out by the ROC (https://www.leiroc.org/). It performs data quality comparisons between a Golden Copy data subset and a National entity dataset.
 
 The project belongs to its author (Alejandro Morales Fernández) and to Banco de España. You are free to distribute it under the conditions described in attached LICENSE file.
-It is written in python and uses the pandas library to manage the datasets. The author is available 
+It is written in python. The author is available 
 via his email: alejandro.morales@bde.es
 
 After version v2.0 there is no need of python to be executed, as the python software and libraries needed are embedded in
