@@ -1,5 +1,5 @@
 
-n_examples = 150000
+n_examples = 100000
 
 description_cells = [
 'File and Tables Description',
@@ -7,7 +7,7 @@ description_cells = [
 This Excel file with the tables is the result of processing the Pyhton Code for the "Pairing LEI - National Identifier" project.
 When the Python Code is processed, 2 Excel files are automatically generated. The names of the files depend on the Jurisdiction and the Registration Status, each one covers the scope of ISSUED Entities or LAPSED Entities, according to the file name. Example of file names generated for the Spanish Jurisdiction are: "DQWG_ES_ISSUED" and "DQWG_ES_LAPSED".
 
-These file have 7 sheets which contain the following information:
+These file have 9 variable sheets which contain the following information:
 - This first sheet is an explantion of the whole file describing the content of each sheet.
 - The rest of the sheets contain one table each, created after the 2 datasets: the Golden Copy for the selected jurisdiction and the national dataset with the selected identifiers.
 The name of each sheet indicates briefly the name of the table that it contains.
@@ -25,7 +25,13 @@ This table indicates the number of total LEIs in the Golden Copy, detailing the 
 This table indicates the total entities in the national dataset, the number of entities which have LEI in that dataset and the number of entities which have each of the selected national identifiers in the dataset.
 """
 ,
-"""3A. Cross National vs GLEIF""","""
+
+"""3. Location Information""","""
+This table shows a summary of the three main variables for location: Headquarters Country, Legal Jursidiction (truncated the first 2 caracters) and Legal Address Country
+The variable which country is selected in this work is by Legal Jursidiction (truncated the first 2 caracters)
+"""
+ ,
+"""4A. Cross National vs GLEIF""","""
 This table is the result of a cross check of national dataset with Golden Copy for companies with Entity Status as ACTIVE and Registration Status as ISSUED or LAPSED (depending on the file name).
 The datasets are crossed without any transformation, this is, the identifiers and the names are crossed exactly as they appear in each dataset.
 
@@ -56,31 +62,36 @@ The following lines summarise the content of each cell of the table, indicating 
 """
 ,
 
-"""3B. Cross check transformation""","""
+"""4B. Cross check transformation""","""
 This table is exactly the same as Table 3A, but previous to the cross checks, both datasets go through a transformation of identifiers and names in order to be able to detect entities with same identifiers or names that don´t match due to punctuation marks, special characters, spaces, or other minor differences. 
 This transformations consists in:
 - For Identifiers: Spaces, puntuation marks, special characters, etc. are erased.
 - For Entity Names: Spaces, puntuation marks, special characters, etc. are erased.  Entity Legal Form´s abbreviations are equaled to the complete Entity Legal Form Name (Treatment inspired in Legal Form´s Proyect from GLEIF) 
 """
- ,
-"""4. By RAs""","""
+,
+"""5. Cross check By RAs""","""
 This table shows the result of cross checking the identifiers in both datasets, with and without transformation, grouped by Registration Authorities. Each file show a different RA.
 - Columns E, G and I: This columns shows the number of entities in the national dataset whose Identifier 1, 2 or 3 match EXACTLY, without transformation, to any of the identifiers contained in any of the three ""EntityID"" fields of the GC.
 - Columns F, H and J: This columns shows the number of entities in the national dataset whose Identifier 1, 2 or 3, once having been TRANSFORMED,  matches any of the identifiers contained in any of the three ""EntityID"" fields of the GC after having also been TRANSFORMED.
 """
 ,
-"""5. By LOUs""","""
-This table indicates the same information as table 4, grouped by LEI Issuers (LOUs) instead of RAs.
+"""6A. LOU Summary""","""
+This table shows the identifiers in GLEIF Golden Copy by LOU: Number of LEIs, Number of RAEntityIDs, Number of VAEntityIDs, Number of OtherVAEntityIDs. The last two columns show the figures of the differences between  Ras, Vas and OtherVAs
 """
  ,
-f"""6. Matched entities sorted""","""
-This table shows the entities whose identifiers have matched in both datasets AFTER TRANSFORMATION, but the names in both datasets don´t match even AFTER TRANSFORMATION.
+ """6B. Cross check By LOUs""","""
+ This table indicates the same information as table 4, grouped by LEI Issuers (LOUs) instead of RAs.
+ """
+  ,
+"""7. matched entities sorted""","""
+This table shows all the entities whose identifiers have matched in both datasets AFTER TRANSFORMATION, but the names in both datasets don´t match even AFTER TRANSFORMATION.
 - Columns B, C and D (RAEntityID, VAEntityID and OtherEntitiyID) indicate the identifiers from the ""EntityID"" fields that has matched to the national identifiers.
 - Columns E, F and G (Id2, Id2 and Id3) indicate the national identifier that have matched the ""EntityID"" field.
 - Columns H and I show the original name of the entity in both datasets without transformation.
-- Columns J and K show the name of the entity in both datasets with transformation.
-- Column L shows the  the % of similarity between the names of the entity in both datasets, according to the Python metrics in name similarity.
-- ColumnS N to Q show LOU and RA ids and names.
+- Column J shows the  the % of similarity between the names of the entity in both datasets, according to the Python metrics in name similarity,
+""",
+"""8. RA Summaries""","""
+In this case, there is a table for each Registration Authority. The aim of these tables is to show which RAs generate each indicator, according to the character length
 """
 
 

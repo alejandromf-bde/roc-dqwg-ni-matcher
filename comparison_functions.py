@@ -3,8 +3,12 @@
 
 from difflib import SequenceMatcher
 import pandas as pd
+import numpy as np
 
 
+    
+    
+len_ranges = [[1,4],[5,5],[6,6],[7,7],[8,8],[9,9], [10, 10], [11,np.inf]]
 
 
 def diff_string(row_text, str1, str2):
@@ -26,6 +30,126 @@ def format_header(worksheet, df, header_format, index = True):
         worksheet.write(0, col_num , value, header_format)
         worksheet.set_column(0, 0, 40)
     worksheet.set_row(0, 60)
+    
+    
+
+
+def calculate_ra_lenght_by_lou(df):
+    """
+    Creates a column for each possible lenght of each id
+    """
+    
+    cod_cif = 'RAEntityID'
+    max_len_cif = len_ranges[-1][0]
+    
+    df['len_cif'] = df[cod_cif].str.len()
+    df_simple = df[['Registration.ManagingLOU', 'LOU Name', 'LEI', 'len_cif', cod_cif]]
+    
+    
+    df_by_lou = df_simple.groupby(['Registration.ManagingLOU', 'LOU Name'], dropna = False).agg('nunique').sort_values(['LEI'], ascending = False)
+    df_by_lou.reset_index(inplace = True)
+
+    
+    for interval in len_ranges:
+        if interval[0] == interval[1]:
+            i = interval[0]
+            tmp_aggregate = df_simple[df_simple['len_cif']==i]
+            tmp_aggregate
+            tmp_aggregate = tmp_aggregate.groupby(['Registration.ManagingLOU', 'LOU Name'], dropna = False).agg('nunique')
+            tmp_aggregate.reset_index(inplace = True)
+            if i == 1:
+                df_report = tmp_aggregate
+            else:
+                df_report.drop(cod_cif, axis=1, inplace=True)
+                df_report = df_report.merge(tmp_aggregate[['Registration.ManagingLOU', 'LOU Name', cod_cif]], left_on = ['Registration.ManagingLOU', 'LOU Name'], right_on = ['Registration.ManagingLOU', 'LOU Name'], how = 'outer')
+
+            df_report[str(i) + ' char.'] = df_report[cod_cif]  # .rename(columns = {cod_cif:'len_'+i})
+        elif interval[0] != interval[1] and interval[1] < np.inf:
+            i = interval[0]
+            j = interval[1]
+            tmp_aggregate = df_simple[(df_simple['len_cif']>=i) & (df_simple['len_cif']<=j )]
+            tmp_aggregate
+            tmp_aggregate = tmp_aggregate.groupby(['Registration.ManagingLOU', 'LOU Name'], dropna = False).agg('nunique')
+            tmp_aggregate.reset_index(inplace = True)
+            if i == 1:
+                df_report = tmp_aggregate
+            else:
+                df_report.drop(cod_cif, axis=1, inplace=True)
+                df_report = df_report.merge(tmp_aggregate[['Registration.ManagingLOU', 'LOU Name', cod_cif]], left_on = ['Registration.ManagingLOU', 'LOU Name'], right_on = ['Registration.ManagingLOU', 'LOU Name'], how = 'outer')
+
+            df_report[str(i)+'-'+str(j) + ' char.'] = df_report[cod_cif]
+    
+    # >9    
+
+    tmp_aggregate = df_simple[df_simple['len_cif']>=max_len_cif]
+    tmp_aggregate
+    tmp_aggregate = tmp_aggregate.groupby(['Registration.ManagingLOU', 'LOU Name'], dropna = False).agg('nunique')
+    tmp_aggregate.reset_index(inplace = True)
+
+
+    df_report.drop(cod_cif, axis=1, inplace=True)
+    df_report = df_report.merge(tmp_aggregate[['Registration.ManagingLOU', 'LOU Name', cod_cif]], left_on = ['Registration.ManagingLOU', 'LOU Name'], right_on = ['Registration.ManagingLOU', 'LOU Name'], how = 'outer')
+
+    df_report['>= '+str(max_len_cif) + ' char'] = df_report[cod_cif]
+
+
+    df_report.drop(cod_cif, axis=1, inplace=True)
+    df_report.drop('len_cif', axis=1, inplace=True)
+    df_report.drop('LEI', axis=1, inplace=True)
+    df_report = df_by_lou[['Registration.ManagingLOU', 'LOU Name', 'LEI']].merge(df_report, 
+                                                                  left_on = ['Registration.ManagingLOU', 'LOU Name'], 
+                                                                  right_on = ['Registration.ManagingLOU', 'LOU Name'],
+                                                                  how = 'outer')
+    df_report = df_report.fillna(0)
+    
+    
+
+    df_report = df_report.sort_values('>= '+str(max_len_cif) + ' char', ascending = False).\
+    rename(columns = {'LEI':'Total Entities'})
+    
+
+    df_report = df_report.sort_values('Total Entities', ascending = False)
+
+    return df_report
+
+
+
+
+def take_location_information(df, variable, country_code):
+    """
+    
+
+    Parameters
+    ----------
+    df : TYPE pandas dataframe
+        DESCRIPTION. Dataframe original
+    variable : TYPE string
+        DESCRIPTION. Variable location
+
+    Returns
+    -------
+    location summary
+
+    """
+    
+    level_2_country_df = df[df[variable] == country_code]
+    active_inactive_country = level_2_country_df[['LEI', 'Entity.EntityStatus']].groupby(['Entity.EntityStatus']).agg(['nunique'])
+    active_inactive_country.columns = active_inactive_country.columns.droplevel(1)
+    active_inactive_country.reset_index(inplace = True)
+    
+    active_inactive_country = active_inactive_country.T
+    
+    new_header = active_inactive_country.iloc[0] #grab the first row for the header
+    active_inactive_country = active_inactive_country[1:] #take the data less the header row
+    active_inactive_country.columns = new_header #set the header row as the df header
+    active_inactive_country.index = [variable]
+    if 'ACTIVE' not in active_inactive_country.columns.to_list():
+        active_inactive_country['ACTIVE'] = 0
+    
+    if 'INACTIVE' not in active_inactive_country.columns.to_list():
+        active_inactive_country['INACTIVE'] = 0
+    return active_inactive_country
+
 
 
 class table_calculator:
@@ -208,7 +332,7 @@ class table_calculator:
         if lou_ra == self.lou_id:
             # some distinctions between RA and LOU apply, as the metadata is different
             summary_lei_ra = lei_gc_df[['LEI', lou_ra]].\
-                groupby([lou_ra]).agg(['count'])
+                groupby([lou_ra], dropna = False).agg(['count'])
             summary_lei_ra.columns = summary_lei_ra.columns.droplevel(1)
             summary_lei_ra.reset_index(inplace=True)
 
@@ -223,7 +347,7 @@ class table_calculator:
 
         else:
             summary_lei_ra = lei_gc_df[['LEI', lou_ra]].\
-                groupby([lou_ra]).agg(['count'])
+                groupby([lou_ra], dropna = False).agg(['count'])
             summary_lei_ra.columns = summary_lei_ra.columns.droplevel(1)
             summary_lei_ra.reset_index(inplace = True)
 
@@ -239,7 +363,7 @@ class table_calculator:
 
         for id in self.ids:
             summary_id_ra = df_trace.dropna(subset=[id])[['LEI', lou_ra]].drop_duplicates().\
-                groupby([lou_ra]).agg(['count'])
+                groupby([lou_ra], dropna = False).agg(['count'])
             summary_id_ra.columns = summary_id_ra.columns.droplevel(1)
             summary_id_ra.reset_index(inplace = True)
             if  lou_ra == self.lou_id:
@@ -250,7 +374,7 @@ class table_calculator:
                     sort_values(['LEI', lou_ra], ascending = [False, True])
             dict_cross_ids[f'Any EntityID matching {id}'] = list(summary_id_ra['LEI_with_id'])
             summary_id_ra = df_trace_h.dropna(subset=[id])[['LEI', lou_ra]].drop_duplicates().\
-                groupby([lou_ra]).agg(['count'])
+                groupby([lou_ra], dropna = False).agg(['count'])
             summary_id_ra.columns = summary_id_ra.columns.droplevel(1)
             summary_id_ra.reset_index(inplace = True)
             any_transformation.append(df_trace_h[['LEI', id, lou_ra]].rename(columns = {id:'id'}))
@@ -269,7 +393,7 @@ class table_calculator:
         any_transformation_df = pd.concat(any_transformation)
 
         summary_ra = any_transformation_df.dropna(subset=['id'])[['LEI', lou_ra]].drop_duplicates(). \
-            groupby([lou_ra]).agg(['count'])
+            groupby([lou_ra], dropna = False).agg(['count'])
         summary_ra.columns = summary_ra.columns.droplevel(1)
         summary_ra.reset_index(inplace = True)
         if lou_ra == self.lou_id:
@@ -290,10 +414,15 @@ class table_calculator:
         df[numeric_columns] = df[numeric_columns].fillna(0)
 
         numeric_columns = df.select_dtypes(include=['number']).columns.to_list()
+        
+        # Identificar automáticamente las columnas numéricas
+        columnas_numericas = df.select_dtypes(include='number').columns
 
-        df = df.append(df.sum(numeric_only=True), ignore_index=True)
+        # Agregar una fila al final con la suma de las columnas numéricas
+        df.loc[len(df)] = df.loc[:, columnas_numericas].sum()
 
         df.iloc[-1, 0] = 'TOTAL'
+        
 
         if lou_ra == self.ra_id:
             df[['Local name of Register', 'International name of organisation responsible for the Register']] = df[['Local name of Register',

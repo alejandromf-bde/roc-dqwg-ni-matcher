@@ -1,4 +1,3 @@
-
 # GLEIF vs National entity identifier matcher
 
 This software is a work developed by Banco de España within the Data Quality Working Group of ROC (https://www.leiroc.org/). It performs data quality comparisons between the Golden Copy of GLEIF data subset and National entity Identifeirs datasets, to verify the pairing of LEI with National Identifiers quality. 
@@ -19,7 +18,9 @@ Some of the ideas for Entity name harmonization have been inspired from GLEIF pr
 
 ## Dependencies
 
-- pandas 1.1.4
+- pandas==2.0.3
+- openpyxl==3.1.2
+- xlsxwriter==3.0.3
 - Other libraries used, already in the python distribution:
   - difflib (used to detect differences between text strings)
   - os
@@ -102,6 +103,9 @@ Fixes a miscalculation in column Partial Name Coincidence NOT Case Sensitive (>8
 ### Version: 2.3 (16 September 2022) 
 Creates the full merged table from both datasets, instead of the worst 50 examples in the last sheets. 
 Fixes some small errors regarding acronym transformations obtained from the ELF code list.
+
+### Version: 2.4 (30 May 2024) 
+Incorporates a location variable summary and a summary of length of identifiers by Registration Authorities
 
 ## Output
 

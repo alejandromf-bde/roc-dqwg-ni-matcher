@@ -1,0 +1,15 @@
+**/dist
+
+**/build
+
+**/.idea
+
+*.log
+
+**/other data
+
+**/output_data
+
+*mock.csv
+
+*mock.csv.zip
