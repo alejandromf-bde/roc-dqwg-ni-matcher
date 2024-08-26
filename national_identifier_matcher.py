@@ -279,7 +279,7 @@ for registrationStatus_allowed in registrationStatus_list:
             )
             cell_format.set_align('vcenter')
             cell_format.set_text_wrap()
-        elif row_num in [2, 4, 6, 8, 10, 12, 14, 16,18,20,22]:
+        elif row_num in [2, 4, 6, 8, 10, 12, 14, 16,18,20,22,24,26]:
             cell_format = workbook.add_format(
                 {'bold': True,
                  'font_size': 13,
@@ -348,7 +348,8 @@ for registrationStatus_allowed in registrationStatus_list:
     
     lei_gc_df = lei_gc_df.merge(lou_name_country_df, how = 'left', left_on =  'Registration.ManagingLOU',right_on = 'lei')
     
-    
+
+    logging.info("Creating Table 3")
     
         
 
@@ -356,10 +357,9 @@ for registrationStatus_allowed in registrationStatus_list:
     worksheet = writer.sheets['3. Location Information'] 
     
     format_header(worksheet, location_df, header_format, index = True)
-    
-    
-    
-    
+
+    logging.info("Creating Table 4")
+
     """
     Registration authority report
     """
@@ -383,8 +383,11 @@ for registrationStatus_allowed in registrationStatus_list:
     summary_oa.columns = summary_oa.columns.droplevel(1)
     summary_oa.reset_index(inplace = True)
     summary_oa = summary_oa.rename(columns = {'LEI': 'LEIs_OtherValidationAuthority', 'OtherVAEntityID': 'Entities_IDOtherValidationAuthority', 'Registration.OtherValidationAuthorities.OtherValidationAuthority.1.ValidationAuthorityID': 'RegistrationAuthority'})
-    
-    
+
+    # Ensure the data types are consistent before merging
+    summary_ra['RegistrationAuthority'] = summary_ra['RegistrationAuthority'].astype(str)
+    summary_va['RegistrationAuthority'] = summary_va['RegistrationAuthority'].astype(str)
+    summary_oa['RegistrationAuthority'] = summary_oa['RegistrationAuthority'].astype(str)
     
     summary_ra_oa_va = summary_ra.\
     merge(summary_va, how = 'outer', on = ['RegistrationAuthority']).\
@@ -396,6 +399,8 @@ for registrationStatus_allowed in registrationStatus_list:
     numeric_columns = summary_ra_oa_va.select_dtypes(include=['number']).columns
     summary_ra_oa_va[numeric_columns] = summary_ra_oa_va[numeric_columns].fillna(0)
     
+    summary_ra_oa_va['RegistrationAuthority'] = summary_ra_oa_va['RegistrationAuthority'].replace('nan', '')
+    
         
     summary_ra_oa_va.to_excel(writer, sheet_name= '4. RA Summary' , index = False) 
         
@@ -406,9 +411,57 @@ for registrationStatus_allowed in registrationStatus_list:
 
 
 
+    logging.info("Creating Table 5")
+    
+        
+    lei_gc_df = lei_gc_df.rename(columns = {'lei':'Managing LOU', 'name': 'LOU Name' })
+    
+    
+    
+    lei_gc_df['DifferentData_ra_va'] = np.select([
+        lei_gc_df['RAEntityID'] == lei_gc_df['VAEntityID']
+        ],
+        [np.nan], 
+        default = lei_gc_df['RAEntityID']
+        
+    )
+    
+    
+    
+    lei_gc_df['DifferentData_ra_oa'] = np.select([
+        lei_gc_df['RAEntityID'] == lei_gc_df['OtherVAEntityID']
+        ],
+        [np.nan], 
+        default = lei_gc_df['RAEntityID']
+        
+    )
+    
+    
+    resumen_lou = lei_gc_df[['LEI', 'RAEntityID', 'VAEntityID', 'OtherVAEntityID', 'Registration.ManagingLOU', 'LOU Name', 'DifferentData_ra_va', 'DifferentData_ra_oa']].groupby(['Registration.ManagingLOU', 'LOU Name'], dropna=False).agg(['nunique'])
+    resumen_lou.columns = resumen_lou.columns.droplevel(1)
+    resumen_lou.reset_index(inplace = True)
+    
+    resumen_lou_output = resumen_lou.\
+    sort_values(['LEI', 'RAEntityID'], ascending = [False, False])
+
+    resumen_lou_output = resumen_lou_output.rename(
+        columns={'Registration.ManagingLOU': 'Managing LOU (LEI)', 'LOU Name': 'Managing LOU (Name)',
+                 'LEI': 'Number of LEIs', 'RAEntityID': 'Number of RAEntityIDs', 'VAEntityID': 'Number of VAEntityID',
+                 'OtherVAEntityID': 'Number of OtherVAEntityIDs'})
+
+    numeric_columns = resumen_lou_output.select_dtypes(include=['number']).columns
+    resumen_lou_output[numeric_columns] = resumen_lou_output[numeric_columns].fillna(0)
+    resumen_lou_output.loc['TOTAL'] = resumen_lou_output.sum(numeric_only=True)
+    resumen_lou_output['Managing LOU (LEI)'].iloc[-1] = 'Total'
+
+    resumen_lou_output.to_excel(writer, sheet_name='5. LOU Summary', index=False)
+
+    worksheet = writer.sheets['5. LOU Summary']
+
+    format_header(worksheet, resumen_lou_output, header_format, index=False)
+
+
     # Ensure the fields to compare are string type
-
-
     national_dataset_df = national_dataset_original_df[:]
 
     for entityId in entityIds:
@@ -447,10 +500,10 @@ for registrationStatus_allowed in registrationStatus_list:
 
     cross_ids_df = table_calculator_instance.calculate_cross_table(df_trace, lei_gc_df, threshold_partial_name)
 
-    logging.info("Creating Table 4A")
+    logging.info("Creating Table 6A")
 
-    cross_ids_df.to_excel(writer, sheet_name= '4A. Cross National vs GLEIF')
-    worksheet = writer.sheets['4A. Cross National vs GLEIF']
+    cross_ids_df.to_excel(writer, sheet_name= '6A. Cross National vs GLEIF')
+    worksheet = writer.sheets['6A. Cross National vs GLEIF']
     format_header(worksheet, cross_ids_df, header_format, index = True)
 
     # purge the ids
@@ -496,94 +549,89 @@ for registrationStatus_allowed in registrationStatus_list:
     df_trace_h_example = df_trace_h_example.drop(columns = ['lei', 'Entity.RegistrationAuthority.RegistrationAuthorityID'])
     df_trace_h_example = df_trace_h_example.rename(columns = {'name':'ManagingLOU Name'})
 
-    logging.info("Creating Table 4B")
+    logging.info("Creating Table 6B")
 
     cross_ids_harmonized_df = table_calculator_instance.calculate_cross_table(df_trace_h, lei_gc_df, threshold_partial_name)  # cross_ids_harmonized_df
 
-    cross_ids_harmonized_df.to_excel(writer, sheet_name= '4B. Cross check transformation')
-    worksheet = writer.sheets['4B. Cross check transformation']
+    cross_ids_harmonized_df.to_excel(writer, sheet_name= '6B. Cross check transformation')
+    worksheet = writer.sheets['6B. Cross check transformation']
     format_header(worksheet, cross_ids_harmonized_df, header_format, index = True)
+
+
+    logging.info("Creating Table 6C")
+
+    cross_ids_harmonized2_df = cross_ids_harmonized_df
+    
+    total_leis = active_inactive[active_inactive['Registration.RegistrationStatus']==registrationStatus_allowed].iloc[0]['LEI']
+    total_leis_with_id = cross_ids_harmonized_df.loc['Total LEIs in EntityID fields', 'GLEIF Golden Copy Any of the EntityID fields']
+    total_leis_match_id = cross_ids_harmonized_df.loc['Any of selected national identifiers in EntityID fields', 'GLEIF Golden Copy Any of the EntityID fields']
+    leis_without_identifier = total_leis - total_leis_with_id
+    unmatched_leis = total_leis - total_leis_match_id
+    leis_threshold = total_leis - cross_ids_harmonized_df.loc['Any of selected national identifiers in EntityID fields', f'Partial Name Coincidence NOT Case Sensitive (>{int(threshold_partial_name* 100)}  %)']
+    less_threshold = round(100 * leis_threshold/total_leis, 2)
+    
+    # Initialise the list dicionary
+    data = {
+        'Total Entities': [total_leis],
+        'Without identifier in GC': [leis_without_identifier],
+        'Unmatched ID': [unmatched_leis],
+        'Matched ID Total': [total_leis_with_id],
+        'Matched - Less 80% coincidence in name': [less_threshold],
+    }
+    # 
+    # # List for the index
+    indices = [registrationStatus_allowed]
+    # 
+    # # Create DataFrame
+    df_summary = pd.DataFrame(data, index=indices)
+
+
+
+
+    df_summary.to_excel(writer, sheet_name= '6C. Cross check summary')
+    worksheet = writer.sheets['6C. Cross check summary']
+    format_header(worksheet, df_summary, header_format, index = True)
+
+
+
+
+
+
+
+
 
 
 
     ra_table = table_calculator_instance.calculate_tables_lou_ra(df_trace, df_trace_h, lei_gc_df, ra_id, lou_name_country_df, ra_name_country_df)
 
-    logging.info("Creating Table 5")
+    logging.info("Creating Table 7")
 
-    ra_table.to_excel(writer, sheet_name= '5. Cross check By RAs', index = False)
-    worksheet = writer.sheets['5. Cross check By RAs']
+    ra_table.to_excel(writer, sheet_name= '7. Cross check By RAs', index = False)
+    worksheet = writer.sheets['7. Cross check By RAs']
     format_header(worksheet, ra_table, header_format, index = False)
 
     lou_table = table_calculator_instance.calculate_tables_lou_ra(df_trace, df_trace_h, lei_gc_df, lou_id, lou_name_country_df, ra_name_country_df)
 
 
-    
-    
-        
-    
-    lei_gc_df['DifferentData_ra_va'] = np.select([
-        lei_gc_df['RAEntityID'] == lei_gc_df['VAEntityID']
-        ],
-        [np.nan], 
-        default = lei_gc_df['RAEntityID']
-        
-    )
-    
-    
-    
-    lei_gc_df['DifferentData_ra_oa'] = np.select([
-        lei_gc_df['RAEntityID'] == lei_gc_df['OtherVAEntityID']
-        ],
-        [np.nan], 
-        default = lei_gc_df['RAEntityID']
-        
-    )
-    
-    
-    lei_gc_df = lei_gc_df.rename(columns = {'lei':'Managing LOU', 'name': 'LOU Name' })
-    
-    
-    resumen_lou = lei_gc_df[['LEI', 'RAEntityID', 'VAEntityID', 'OtherVAEntityID', 'Registration.ManagingLOU', 'LOU Name', 'DifferentData_ra_va', 'DifferentData_ra_oa']].groupby(['Registration.ManagingLOU', 'LOU Name'], dropna=False).agg(['nunique'])
-    resumen_lou.columns = resumen_lou.columns.droplevel(1)
-    resumen_lou.reset_index(inplace = True)
-    
-    resumen_lou_output = resumen_lou.\
-    sort_values(['LEI', 'RAEntityID'], ascending = [False, False])
-        
-    logging.info("Creating Table 6A")
-        
-    
-    resumen_lou_output = resumen_lou_output.rename(columns = {'Registration.ManagingLOU': 'Managing LOU (LEI)', 'LOU Name': 'Managing LOU (Name)',
-                                                              'LEI': 'Number of LEIs', 'RAEntityID': 'Number of RAEntityIDs', 'VAEntityID': 'Number of VAEntityID', 
-                                                              'OtherVAEntityID': 'Number of OtherVAEntityIDs'})
-    
-    numeric_columns = resumen_lou_output.select_dtypes(include=['number']).columns
-    resumen_lou_output[numeric_columns] = resumen_lou_output[numeric_columns].fillna(0)
-    resumen_lou_output.loc['TOTAL'] = resumen_lou_output.sum(numeric_only=True)
-    resumen_lou_output['Managing LOU (LEI)'].iloc[-1] = 'Total'
-    
-    resumen_lou_output.to_excel(writer, sheet_name= '6A. LOU Summary' , index = False) 
 
-    worksheet = writer.sheets['6A. LOU Summary']
-    
-    format_header(worksheet, resumen_lou_output, header_format, index = False)
+
     
 
-    logging.info("Creating Table 6B")
+    logging.info("Creating Table 8")
 
-    lou_table.to_excel(writer, sheet_name= '6B. Cross check By LOUs', index = False)
-    worksheet = writer.sheets['6B. Cross check By LOUs']
+    lou_table.to_excel(writer, sheet_name= '8. Cross check By LOUs', index = False)
+    worksheet = writer.sheets['8. Cross check By LOUs']
     format_header(worksheet, lou_table, header_format, index = False)
 
 
-    logging.info("Creating Table 7")
+    logging.info("Creating Table 9")
 
-    df_trace_h_example.to_excel(writer, sheet_name= '7. Matched entities sorted', index = False)
-    worksheet = writer.sheets['7. Matched entities sorted']
+    df_trace_h_example.to_excel(writer, sheet_name= '9. Matched entities sorted', index = False)
+    worksheet = writer.sheets['9. Matched entities sorted']
     format_header(worksheet, df_trace_h_example, header_format, index = False)
     
-    
-    
+
+
     
     
     
@@ -596,8 +644,8 @@ for registrationStatus_allowed in registrationStatus_list:
         numeric_columns = df_report.select_dtypes(include=['number']).columns
         df_report[numeric_columns] = df_report[numeric_columns].fillna(0)
         
-        df_report.to_excel(writer, sheet_name= f'8. {ra}' , index = False) 
-        worksheet = writer.sheets[f'8. {ra}']
+        df_report.to_excel(writer, sheet_name= f'10. {ra}' , index = False)
+        worksheet = writer.sheets[f'10. {ra}']
         format_header(worksheet, df_report, header_format, index = False)
             
          

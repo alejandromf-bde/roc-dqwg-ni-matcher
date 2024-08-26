@@ -1,5 +1,5 @@
 
-n_examples = 100000
+n_examples = 800000
 
 description_cells = [
 'File and Tables Description',
@@ -30,8 +30,16 @@ This table indicates the total entities in the national dataset, the number of e
 This table shows a summary of the three main variables for location: Headquarters Country, Legal Jursidiction (truncated the first 2 caracters) and Legal Address Country
 The variable which country is selected in this work is by Legal Jursidiction (truncated the first 2 caracters)
 """
+,
+"""4. RA Summary""","""
+This table shows the identifiers in GLEIF Golden Copy by RA: Number of LEIs, Number of RAEntityIDs, Number of VAEntityIDs, Number of OtherVAEntityIDs.
+"""
+,
+"""5. LOU Summary""","""
+This table shows the identifiers in GLEIF Golden Copy by LOU: Number of LEIs, Number of RAEntityIDs, Number of VAEntityIDs, Number of OtherVAEntityIDs. The last two columns show the figures of the differences between  Ras, Vas and OtherVAs
+"""
  ,
-"""4A. Cross National vs GLEIF""","""
+"""6A. Cross National vs GLEIF""","""
 This table is the result of a cross check of national dataset with Golden Copy for companies with Entity Status as ACTIVE and Registration Status as ISSUED or LAPSED (depending on the file name).
 The datasets are crossed without any transformation, this is, the identifiers and the names are crossed exactly as they appear in each dataset.
 
@@ -62,35 +70,37 @@ The following lines summarise the content of each cell of the table, indicating 
 """
 ,
 
-"""4B. Cross check transformation""","""
-This table is exactly the same as Table 3A, but previous to the cross checks, both datasets go through a transformation of identifiers and names in order to be able to detect entities with same identifiers or names that don´t match due to punctuation marks, special characters, spaces, or other minor differences. 
+"""6B. Cross check transformation""","""
+This table is exactly the same as Table 6A, but previous to the cross checks, both datasets go through a transformation of identifiers and names in order to be able to detect entities with same identifiers or names that don´t match due to punctuation marks, special characters, spaces, or other minor differences. 
 This transformations consists in:
 - For Identifiers: Spaces, puntuation marks, special characters, etc. are erased.
 - For Entity Names: Spaces, puntuation marks, special characters, etc. are erased.  Entity Legal Form´s abbreviations are equaled to the complete Entity Legal Form Name (Treatment inspired in Legal Form´s Proyect from GLEIF) 
 """
 ,
-"""5. Cross check By RAs""","""
+
+"""6C. Cross check Summary""","""
+This table is a summary of Table 6B
+"""
+,
+"""7. Cross check By RAs""","""
 This table shows the result of cross checking the identifiers in both datasets, with and without transformation, grouped by Registration Authorities. Each file show a different RA.
 - Columns E, G and I: This columns shows the number of entities in the national dataset whose Identifier 1, 2 or 3 match EXACTLY, without transformation, to any of the identifiers contained in any of the three ""EntityID"" fields of the GC.
 - Columns F, H and J: This columns shows the number of entities in the national dataset whose Identifier 1, 2 or 3, once having been TRANSFORMED,  matches any of the identifiers contained in any of the three ""EntityID"" fields of the GC after having also been TRANSFORMED.
 """
-,
-"""6A. LOU Summary""","""
-This table shows the identifiers in GLEIF Golden Copy by LOU: Number of LEIs, Number of RAEntityIDs, Number of VAEntityIDs, Number of OtherVAEntityIDs. The last two columns show the figures of the differences between  Ras, Vas and OtherVAs
-"""
+
  ,
- """6B. Cross check By LOUs""","""
+ """8. Cross check By LOUs""","""
  This table indicates the same information as table 4, grouped by LEI Issuers (LOUs) instead of RAs.
  """
   ,
-"""7. matched entities sorted""","""
+"""9. matched entities sorted""","""
 This table shows all the entities whose identifiers have matched in both datasets AFTER TRANSFORMATION, but the names in both datasets don´t match even AFTER TRANSFORMATION.
 - Columns B, C and D (RAEntityID, VAEntityID and OtherEntitiyID) indicate the identifiers from the ""EntityID"" fields that has matched to the national identifiers.
 - Columns E, F and G (Id2, Id2 and Id3) indicate the national identifier that have matched the ""EntityID"" field.
 - Columns H and I show the original name of the entity in both datasets without transformation.
 - Column J shows the  the % of similarity between the names of the entity in both datasets, according to the Python metrics in name similarity,
 """,
-"""8. RA Summaries""","""
+"""10. RA Summaries""","""
 In this case, there is a table for each Registration Authority. The aim of these tables is to show which RAs generate each indicator, according to the character length
 """
 
