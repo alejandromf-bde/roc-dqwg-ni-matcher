@@ -76,7 +76,9 @@ Optionals:
 
 Example of execution without python (easy way):
 
-The user only has to double click the executable ni-matcher.exe and write the parameters. Alternatively, he can write the 
+Firstly, the user has to download the executable ni-matcher.exe. To do so, please click in this repository in the file ni-matcher.exe and the press "download raw file" in the right of the screen. That is the only way to download this heavy file.
+
+Once downloaded, the user only has to double click the executable ni-matcher.exe and write the parameters. Alternatively, he can write the 
 following in a windows console and execute the program with the parameters at the same time:
 ```
 ni-matcher.exe ES 3
@@ -105,7 +107,10 @@ Creates the full merged table from both datasets, instead of the worst 50 exampl
 Fixes some small errors regarding acronym transformations obtained from the ELF code list.
 
 ### Version: 2.4 (30 May 2024) 
-Incorporates a location variable summary and a summary of length of identifiers by Registration Authorities
+Incorporates a location variable summary and a summary of length of identifiers by Registration Authorities.
+
+### Version: 2.5 (26 Aug 2024) 
+Adds a cross check summary, table which will be useful to compare results among countries.
 
 ## Output
 
