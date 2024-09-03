@@ -76,9 +76,9 @@ Optionals:
 
 Example of execution without python (easy way):
 
-Firstly, if the ni-matcher.exe has not been properly downloaded (it show be around 40mb), the user has to download the executable ni-matcher.exe manually. To do so, please click in this repository in the file ni-matcher.exe and the press "download raw file" in the right of the screen. That is the only way to download this heavy file.
+Firstly, if the ni-matcher.exe had not been properly downloaded (it should weight around 40mb, check if that is correct), the user would have to download the executable ni-matcher.exe manually. To do so, please click in this repository in the file ni-matcher.exe and the press "download raw file" in the right of the screen. That is the only way to download this heavy file.
 
-Once downloaded, the user only has to double click the executable ni-matcher.exe and write the parameters. Alternatively, he can write the 
+Once downloaded with the ni-matcher.exe, the user only has to double click the executable ni-matcher.exe and write the parameters. Alternatively, he can write the 
 following in a windows console and execute the program with the parameters at the same time:
 ```
 ni-matcher.exe ES 3
