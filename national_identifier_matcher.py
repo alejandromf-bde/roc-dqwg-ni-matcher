@@ -566,16 +566,16 @@ for registrationStatus_allowed in registrationStatus_list:
     total_leis_with_id = cross_ids_harmonized_df.loc['Total LEIs in EntityID fields', 'GLEIF Golden Copy Any of the EntityID fields']
     total_leis_match_id = cross_ids_harmonized_df.loc['Any of selected national identifiers in EntityID fields', 'GLEIF Golden Copy Any of the EntityID fields']
     leis_without_identifier = total_leis - total_leis_with_id
-    unmatched_leis = total_leis - total_leis_match_id
-    leis_threshold = total_leis - cross_ids_harmonized_df.loc['Any of selected national identifiers in EntityID fields', f'Partial Name Coincidence NOT Case Sensitive (>{int(threshold_partial_name* 100)}  %)']
-    less_threshold = round(100 * leis_threshold/total_leis, 2)
+    unmatched_leis = total_leis_with_id - total_leis_match_id
+    leis_threshold = total_leis_match_id - cross_ids_harmonized_df.loc['Any of selected national identifiers in EntityID fields', f'Partial Name Coincidence NOT Case Sensitive (>{int(threshold_partial_name* 100)}  %)']
+    less_threshold = round(100 * leis_threshold/total_leis_match_id, 2)
     
     # Initialise the list dicionary
     data = {
         'Total Entities': [total_leis],
         'Without identifier in GC': [leis_without_identifier],
         'Unmatched ID': [unmatched_leis],
-        'Matched ID Total': [total_leis_with_id],
+        'Matched ID Total': [total_leis_match_id],
         'Matched - Less 80% coincidence in name': [less_threshold],
     }
     # 
