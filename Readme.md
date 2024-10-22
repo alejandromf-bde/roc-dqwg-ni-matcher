@@ -107,6 +107,16 @@ Fixes some small errors regarding acronym transformations obtained from the ELF 
 ### Version: 2.4 (30 May 2024) 
 Incorporates a location variable summary and a summary of length of identifiers by Registration Authorities
 
+
+### Version: 2.4 (30 May 2024) 
+Incorporates a location variable summary and a summary of length of identifiers by Registration Authorities
+
+### Version: 2.5 (26 Aug 2024) 
+Creates table 6C, summary of cross-tables.
+
+### Version: 2.6 (22 Oct 2024) 
+Fixes numbers in table 6C.
+
 ## Output
 
 The code creates a directory called output_data and stores the final reports in that folder. Example for Spain: DQWG_ES_ISSUED.xlsx and DQWG_ES_LAPSED.xlsx
