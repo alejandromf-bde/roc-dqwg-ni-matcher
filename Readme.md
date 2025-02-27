@@ -49,7 +49,7 @@ columns:
   - LEI (optional)
 
 Aditionally, it requires the following meta-datasets, completely available in the
-GLEIF Website and API:
+GLEIF Website and API. An older version is already provided, but would be recommended to update these files:
 
 
 - lou_attributes.csv, containing all the LOU information, can be downloaded from the API: https://api.gleif.org/api/v1/lei-issuers
