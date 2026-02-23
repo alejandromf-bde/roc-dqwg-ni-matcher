@@ -2,7 +2,7 @@
 
 This software is a work developed by Banco de España within the Data Quality Working Group of ROC (https://www.leiroc.org/). It performs data quality comparisons between the Golden Copy of GLEIF data subset and National entity Identifeirs datasets, to verify the pairing of LEI with National Identifiers quality. 
  
-The project belongs to its author (Alejandro Morales Fernández) and to Banco de España. You are free to distribute it under the conditions described in attached LICENSE file. It is written in python. The author is available via his email: alejandro.morales@bde.es.
+The project belongs to its author (Alejandro Morales Fernández) and to Banco de España. You are free to distribute it under the conditions described in attached LICENSE file. It is written in python. The author is available via his email: alejandromf262@gmail.com.
 
 
 After version v2.0 there is no need of python to be executed, as the python software and libraries needed are embedded in
@@ -117,3 +117,4 @@ Fixes numbers in table 6C.
 ## Output
 
 The code creates a directory called output_data and stores the final reports in that folder. Example for Spain: DQWG_ES_ISSUED.xlsx and DQWG_ES_LAPSED.xlsx
+
